@@ -115,8 +115,8 @@ class OrderController extends Controller
             // Assign table if provided
             if ($order->table_id) {
                 $table = Table::find($order->table_id);
-                if ($table) {
-                    $table->assignToOrder($order->id);
+                if ($table && $table->isAvailable()) {
+                    $table->occupy($order);
                 }
             }
 
@@ -212,8 +212,8 @@ class OrderController extends Controller
                 // Assign new table
                 if ($request->input('table_id')) {
                     $table = Table::find($request->input('table_id'));
-                    if ($table) {
-                        $table->assignToOrder($order->id);
+                    if ($table && $table->isAvailable()) {
+                        $table->occupy($order);
                     }
                 }
             }

@@ -15,24 +15,53 @@ use Illuminate\Support\Facades\Log;
 class PaymentController extends Controller
 {
     /**
-     * Display payments for an order.
+     * Display a listing of payments.
      */
-    public function index(Order $order): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('view', $order);
+        $this->authorize('viewAny', Payment::class);
 
-        $payments = $order->payments()
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = Payment::with(['order']);
+
+        // Apply filters
+        if ($request->filled('order_id')) {
+            $query->where('order_id', $request->input('order_id'));
+        }
+
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->input('payment_method'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->input('date'));
+        }
+
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        
+        if (in_array($sortBy, ['created_at', 'amount', 'payment_method', 'status'])) {
+            $query->orderBy($sortBy, $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Pagination
+        $perPage = min($request->input('per_page', 15), 100);
+        $payments = $query->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'data' => PaymentResource::collection($payments),
+            'data' => PaymentResource::collection($payments->items()),
             'meta' => [
-                'order_id' => $order->id,
-                'order_total' => $order->total_amount,
-                'paid_amount' => $payments->where('status', 'completed')->sum('amount'),
-                'remaining_amount' => max(0, $order->total_amount - $payments->where('status', 'completed')->sum('amount')),
+                'current_page' => $payments->currentPage(),
+                'last_page' => $payments->lastPage(),
+                'per_page' => $payments->perPage(),
+                'total' => $payments->total(),
                 'timestamp' => now()->toISOString(),
                 'version' => 'v1'
             ]
@@ -42,8 +71,9 @@ class PaymentController extends Controller
     /**
      * Process a payment for an order.
      */
-    public function store(ProcessPaymentRequest $request, Order $order): JsonResponse
+    public function store(ProcessPaymentRequest $request): JsonResponse
     {
+        $order = Order::findOrFail($request->input('order_id'));
         $this->authorize('update', $order);
 
         // Check if order can accept payments
@@ -164,23 +194,9 @@ class PaymentController extends Controller
     /**
      * Display the specified payment.
      */
-    public function show(Order $order, Payment $payment): JsonResponse
+    public function show(Payment $payment): JsonResponse
     {
-        $this->authorize('view', $order);
-
-        if ($payment->order_id !== $order->id) {
-            return response()->json([
-                'success' => false,
-                'error' => [
-                    'code' => 'PAYMENT_NOT_FOUND',
-                    'message' => 'Payment not found for this order.',
-                ],
-                'meta' => [
-                    'timestamp' => now()->toISOString(),
-                    'version' => 'v1'
-                ]
-            ], 404);
-        }
+        $this->authorize('view', $payment);
 
         $payment->load(['order', 'refunds']);
 
@@ -197,7 +213,7 @@ class PaymentController extends Controller
     /**
      * Get payment methods configuration.
      */
-    public function methods(): JsonResponse
+    public function paymentMethods(): JsonResponse
     {
         $this->authorize('viewAny', Payment::class);
 
@@ -251,10 +267,44 @@ class PaymentController extends Controller
     }
 
     /**
+     * Get payments summary.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Payment::class);
+
+        $date = $request->input('date', now()->toDateString());
+        
+        $baseQuery = Payment::whereDate('created_at', $date);
+
+        $summary = [
+            'total_payments' => (clone $baseQuery)->count(),
+            'completed_payments' => (clone $baseQuery)->where('status', 'completed')->count(),
+            'pending_payments' => (clone $baseQuery)->where('status', 'pending')->count(),
+            'failed_payments' => (clone $baseQuery)->where('status', 'failed')->count(),
+            'total_amount' => (clone $baseQuery)->where('status', 'completed')->sum('amount'),
+            'cash_payments' => (clone $baseQuery)->where('payment_method', 'cash')->where('status', 'completed')->sum('amount'),
+            'card_payments' => (clone $baseQuery)->where('payment_method', 'card')->where('status', 'completed')->sum('amount'),
+            'digital_payments' => (clone $baseQuery)->whereIn('payment_method', ['qris', 'e_wallet'])->where('status', 'completed')->sum('amount'),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $summary,
+            'meta' => [
+                'date' => $date,
+                'timestamp' => now()->toISOString(),
+                'version' => 'v1'
+            ]
+        ]);
+    }
+
+    /**
      * Generate receipt for an order.
      */
-    public function receipt(Order $order): JsonResponse
+    public function receipt(Request $request): JsonResponse
     {
+        $order = Order::findOrFail($request->input('order_id'));
         $this->authorize('view', $order);
 
         if ($order->status !== 'completed') {
