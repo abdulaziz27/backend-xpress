@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Session;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class StoreSwitchingTest extends TestCase
 {
@@ -50,7 +51,7 @@ class StoreSwitchingTest extends TestCase
         $this->storeSwitchingService = new StoreSwitchingService();
     }
 
-    /** @test */
+    #[Test]
     public function system_admin_can_switch_to_store_context()
     {
         $result = $this->storeSwitchingService->switchStore($this->systemAdmin, $this->store1->id);
@@ -60,7 +61,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEquals($this->store1->id, $this->systemAdmin->fresh()->store_id);
     }
 
-    /** @test */
+    #[Test]
     public function system_admin_can_clear_store_context()
     {
         // First switch to a store
@@ -74,7 +75,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertNull($this->systemAdmin->fresh()->store_id);
     }
 
-    /** @test */
+    #[Test]
     public function non_admin_cannot_switch_stores()
     {
         $this->expectException(\Exception::class);
@@ -83,7 +84,7 @@ class StoreSwitchingTest extends TestCase
         $this->storeSwitchingService->switchStore($this->owner, $this->store2->id);
     }
 
-    /** @test */
+    #[Test]
     public function non_admin_cannot_clear_store_context()
     {
         $this->expectException(\Exception::class);
@@ -92,7 +93,7 @@ class StoreSwitchingTest extends TestCase
         $this->storeSwitchingService->clearStoreContext($this->owner);
     }
 
-    /** @test */
+    #[Test]
     public function switching_to_nonexistent_store_throws_exception()
     {
         $this->expectException(\Exception::class);
@@ -101,7 +102,7 @@ class StoreSwitchingTest extends TestCase
         $this->storeSwitchingService->switchStore($this->systemAdmin, 'nonexistent-id');
     }
 
-    /** @test */
+    #[Test]
     public function get_available_stores_returns_all_stores_for_admin()
     {
         $stores = $this->storeSwitchingService->getAvailableStores($this->systemAdmin);
@@ -111,7 +112,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEquals($this->store2->name, $stores[1]['name']);
     }
 
-    /** @test */
+    #[Test]
     public function get_available_stores_returns_empty_for_non_admin()
     {
         $stores = $this->storeSwitchingService->getAvailableStores($this->owner);
@@ -119,7 +120,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEmpty($stores);
     }
 
-    /** @test */
+    #[Test]
     public function get_current_store_context_returns_session_value_for_admin()
     {
         Session::put('admin_store_context', $this->store1->id);
@@ -129,7 +130,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEquals($this->store1->id, $context);
     }
 
-    /** @test */
+    #[Test]
     public function get_current_store_context_returns_user_store_for_non_admin()
     {
         $context = $this->storeSwitchingService->getCurrentStoreContext($this->owner);
@@ -137,7 +138,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEquals($this->store1->id, $context);
     }
 
-    /** @test */
+    #[Test]
     public function is_in_store_context_works_correctly()
     {
         // Admin without context
@@ -151,7 +152,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertTrue($this->storeSwitchingService->isInStoreContext($this->owner));
     }
 
-    /** @test */
+    #[Test]
     public function get_current_store_info_returns_store_details()
     {
         Session::put('admin_store_context', $this->store1->id);
@@ -163,7 +164,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertEquals($this->store1->email, $info['email']);
     }
 
-    /** @test */
+    #[Test]
     public function validate_store_access_works_correctly()
     {
         // Admin can access any store
@@ -175,7 +176,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertFalse($this->storeSwitchingService->validateStoreAccess($this->owner, $this->store2->id));
     }
 
-    /** @test */
+    #[Test]
     public function store_switching_logs_activity()
     {
         Log::shouldReceive('info')
@@ -185,7 +186,7 @@ class StoreSwitchingTest extends TestCase
         $this->storeSwitchingService->switchStore($this->systemAdmin, $this->store1->id);
     }
 
-    /** @test */
+    #[Test]
     public function store_switch_api_endpoint_works()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -206,7 +207,7 @@ class StoreSwitchingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function store_switch_api_requires_admin_role()
     {
         Sanctum::actingAs($this->owner);
@@ -218,7 +219,7 @@ class StoreSwitchingTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function store_switch_api_validates_store_exists()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -236,7 +237,7 @@ class StoreSwitchingTest extends TestCase
         $this->assertArrayHasKey('error', $responseData);
     }
 
-    /** @test */
+    #[Test]
     public function clear_context_api_endpoint_works()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -255,7 +256,7 @@ class StoreSwitchingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function get_available_stores_api_endpoint_works()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -280,7 +281,7 @@ class StoreSwitchingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function get_current_context_api_endpoint_works()
     {
         Sanctum::actingAs($this->systemAdmin);

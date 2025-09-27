@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\Sanctum;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class MultiTenancyEnforcementTest extends TestCase
 {
@@ -64,7 +65,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->manager1->assignRole('manager');
     }
 
-    /** @test */
+    #[Test]
     public function system_admin_can_access_all_stores_data()
     {
         // Create categories first
@@ -84,7 +85,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertTrue($products->contains('id', $product2->id));
     }
 
-    /** @test */
+    #[Test]
     public function store_owner_can_only_access_own_store_data()
     {
         // Create categories first
@@ -104,7 +105,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertFalse($products->contains('id', $product2->id));
     }
 
-    /** @test */
+    #[Test]
     public function tenant_scope_middleware_validates_store_access()
     {
         // Test that middleware exists and can be instantiated
@@ -117,7 +118,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $products->count());
     }
 
-    /** @test */
+    #[Test]
     public function tenant_scope_middleware_is_registered()
     {
         // Test that the middleware is properly registered by checking if it can be resolved
@@ -134,7 +135,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertTrue(class_exists(\App\Http\Middleware\TenantScopeMiddleware::class));
     }
 
-    /** @test */
+    #[Test]
     public function models_automatically_scope_to_current_user_store()
     {
         Sanctum::actingAs($this->owner1);
@@ -148,7 +149,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertEquals($this->store1->id, $category->store_id);
     }
 
-    /** @test */
+    #[Test]
     public function system_admin_must_explicitly_set_store_id()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -163,7 +164,7 @@ class MultiTenancyEnforcementTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function system_admin_can_create_records_with_explicit_store_id()
     {
         Sanctum::actingAs($this->systemAdmin);
@@ -177,7 +178,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertEquals($this->store1->id, $category->store_id);
     }
 
-    /** @test */
+    #[Test]
     public function store_scope_can_be_bypassed_with_methods()
     {
         $category1 = Category::factory()->create(['store_id' => $this->store1->id]);
@@ -200,7 +201,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertCount(2, Product::forAllStores()->get());
     }
 
-    /** @test */
+    #[Test]
     public function belongs_to_store_trait_provides_helper_methods()
     {
         $category1 = Category::factory()->create(['store_id' => $this->store1->id]);
@@ -216,7 +217,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertFalse($product->belongsToCurrentUserStore());
     }
 
-    /** @test */
+    #[Test]
     public function cross_store_data_access_is_prevented()
     {
         $order1 = Order::factory()->create(['store_id' => $this->store1->id]);
@@ -233,7 +234,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertNull(Order::find($order2->id));
     }
 
-    /** @test */
+    #[Test]
     public function user_without_store_id_gets_no_results()
     {
         $category1 = Category::factory()->create(['store_id' => $this->store1->id]);
@@ -251,7 +252,7 @@ class MultiTenancyEnforcementTest extends TestCase
         $this->assertCount(0, Product::all());
     }
 
-    /** @test */
+    #[Test]
     public function activity_log_records_store_context()
     {
         Sanctum::actingAs($this->owner1);

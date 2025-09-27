@@ -23,8 +23,12 @@ class MemberManagementTest extends TestCase
     {
         parent::setUp();
 
+        // Seed permissions and roles
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $this->store = Store::factory()->create();
         $this->user = User::factory()->create(['store_id' => $this->store->id]);
+        $this->user->assignRole('owner');
         
         // Initialize default member tiers
         $loyaltyService = app(LoyaltyService::class);
@@ -72,7 +76,10 @@ class MemberManagementTest extends TestCase
 
     public function test_can_add_loyalty_points_with_transaction_tracking()
     {
-        $member = Member::factory()->create(['store_id' => $this->store->id]);
+        $member = Member::factory()->create([
+            'store_id' => $this->store->id,
+            'loyalty_points' => 0, // Start with 0 points
+        ]);
 
         $response = $this->postJson("/api/v1/members/{$member->id}/loyalty-points/add", [
             'points' => 500,

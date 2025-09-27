@@ -22,8 +22,12 @@ class TableManagementTest extends TestCase
     {
         parent::setUp();
 
+        // Seed permissions and roles
+        $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+
         $this->store = Store::factory()->create();
         $this->user = User::factory()->create(['store_id' => $this->store->id]);
+        $this->user->assignRole('owner');
         
         Sanctum::actingAs($this->user);
     }
