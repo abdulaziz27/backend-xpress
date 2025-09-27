@@ -15,10 +15,13 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('store_id')->index();
             $table->string('table_number');
-            $table->string('name');
+            $table->string('name')->nullable();
             $table->integer('capacity')->default(4);
             $table->enum('status', ['available', 'occupied', 'reserved', 'maintenance'])->default('available');
             $table->string('location')->nullable();
+            $table->text('description')->nullable();
+            $table->string('qr_code')->nullable();
+            $table->integer('customer_count')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             
