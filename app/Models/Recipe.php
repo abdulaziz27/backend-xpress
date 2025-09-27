@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Scopes\StoreScope;
+use App\Models\Concerns\BelongsToStore;
 
 class Recipe extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, BelongsToStore;
 
     protected $fillable = [
         'store_id',
@@ -20,34 +20,19 @@ class Recipe extends Model
         'description',
         'yield_quantity',
         'yield_unit',
-        'preparation_time',
-        'cooking_time',
-        'instructions',
+        'total_cost',
+        'cost_per_unit',
         'is_active',
     ];
 
     protected $casts = [
         'yield_quantity' => 'decimal:2',
-        'preparation_time' => 'integer',
-        'cooking_time' => 'integer',
+        'total_cost' => 'decimal:2',
+        'cost_per_unit' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
-    /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new StoreScope);
-    }
 
-    /**
-     * Get the store that owns the recipe.
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
 
     /**
      * Get the product associated with the recipe.
@@ -66,22 +51,33 @@ class Recipe extends Model
     }
 
     /**
-     * Calculate total cost of recipe.
+     * Calculate and update total cost of recipe.
      */
     public function calculateTotalCost(): float
     {
-        return $this->items()->sum(function ($item) {
-            return $item->quantity * $item->unit_cost;
-        });
+        $totalCost = $this->items()->sum('total_cost');
+        $this->update(['total_cost' => $totalCost]);
+        return $totalCost;
     }
 
     /**
-     * Calculate cost per unit.
+     * Calculate and update cost per unit.
      */
     public function calculateUnitCost(): float
     {
-        $totalCost = $this->calculateTotalCost();
-        return $this->yield_quantity > 0 ? $totalCost / $this->yield_quantity : 0;
+        $totalCost = $this->total_cost ?: $this->calculateTotalCost();
+        $unitCost = $this->yield_quantity > 0 ? $totalCost / $this->yield_quantity : 0;
+        $this->update(['cost_per_unit' => $unitCost]);
+        return $unitCost;
+    }
+
+    /**
+     * Recalculate all costs when recipe items change.
+     */
+    public function recalculateCosts(): void
+    {
+        $this->calculateTotalCost();
+        $this->calculateUnitCost();
     }
 
     /**

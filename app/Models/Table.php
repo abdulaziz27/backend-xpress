@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Concerns\BelongsToStore;
 
 class Table extends Model
@@ -70,6 +71,14 @@ class Table extends Model
     public function currentOccupancy(): ?TableOccupancyHistory
     {
         return $this->occupancyHistories()->occupied()->latest()->first();
+    }
+
+    /**
+     * Get the current occupancy relationship for eager loading.
+     */
+    public function currentOccupancyRelation(): HasOne
+    {
+        return $this->hasOne(TableOccupancyHistory::class)->occupied()->latest();
     }
 
     /**

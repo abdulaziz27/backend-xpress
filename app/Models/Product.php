@@ -74,6 +74,38 @@ class Product extends Model
     }
 
     /**
+     * Get the inventory movements for the product.
+     */
+    public function inventoryMovements(): HasMany
+    {
+        return $this->hasMany(InventoryMovement::class);
+    }
+
+    /**
+     * Get the stock level for the product.
+     */
+    public function stockLevel()
+    {
+        return $this->hasOne(StockLevel::class);
+    }
+
+    /**
+     * Get the COGS history for the product.
+     */
+    public function cogsHistory(): HasMany
+    {
+        return $this->hasMany(CogsHistory::class);
+    }
+
+    /**
+     * Get the recipes for the product.
+     */
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
+
+    /**
      * Check if product is low on stock.
      */
     public function isLowStock(): bool

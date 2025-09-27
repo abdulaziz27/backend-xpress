@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Scopes\StoreScope;
+use App\Models\Concerns\BelongsToStore;
 
 class InventoryMovement extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, BelongsToStore;
 
     protected $fillable = [
         'store_id',
@@ -32,21 +32,15 @@ class InventoryMovement extends Model
         'total_cost' => 'decimal:2',
     ];
 
-    /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::addGlobalScope(new StoreScope);
-    }
-
-    /**
-     * Get the store that owns the inventory movement.
-     */
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
+    // Movement types
+    const TYPE_SALE = 'sale';
+    const TYPE_PURCHASE = 'purchase';
+    const TYPE_ADJUSTMENT_IN = 'adjustment_in';
+    const TYPE_ADJUSTMENT_OUT = 'adjustment_out';
+    const TYPE_TRANSFER_IN = 'transfer_in';
+    const TYPE_TRANSFER_OUT = 'transfer_out';
+    const TYPE_RETURN = 'return';
+    const TYPE_WASTE = 'waste';
 
     /**
      * Get the product associated with the movement.
@@ -85,7 +79,12 @@ class InventoryMovement extends Model
      */
     public function scopeStockIn($query)
     {
-        return $query->whereIn('type', ['purchase', 'adjustment_in', 'return']);
+        return $query->whereIn('type', [
+            self::TYPE_PURCHASE,
+            self::TYPE_ADJUSTMENT_IN,
+            self::TYPE_TRANSFER_IN,
+            self::TYPE_RETURN
+        ]);
     }
 
     /**
@@ -93,6 +92,73 @@ class InventoryMovement extends Model
      */
     public function scopeStockOut($query)
     {
-        return $query->whereIn('type', ['sale', 'adjustment_out', 'waste']);
+        return $query->whereIn('type', [
+            self::TYPE_SALE,
+            self::TYPE_ADJUSTMENT_OUT,
+            self::TYPE_TRANSFER_OUT,
+            self::TYPE_WASTE
+        ]);
+    }
+
+    /**
+     * Check if this is a stock increase movement.
+     */
+    public function isStockIncrease(): bool
+    {
+        return in_array($this->type, [
+            self::TYPE_PURCHASE,
+            self::TYPE_ADJUSTMENT_IN,
+            self::TYPE_TRANSFER_IN,
+            self::TYPE_RETURN
+        ]);
+    }
+
+    /**
+     * Check if this is a stock decrease movement.
+     */
+    public function isStockDecrease(): bool
+    {
+        return in_array($this->type, [
+            self::TYPE_SALE,
+            self::TYPE_ADJUSTMENT_OUT,
+            self::TYPE_TRANSFER_OUT,
+            self::TYPE_WASTE
+        ]);
+    }
+
+    /**
+     * Get the signed quantity (positive for stock in, negative for stock out).
+     */
+    public function getSignedQuantity(): int
+    {
+        return $this->isStockIncrease() ? $this->quantity : -$this->quantity;
+    }
+
+    /**
+     * Create a stock movement record.
+     */
+    public static function createMovement(
+        string $productId,
+        string $type,
+        int $quantity,
+        ?float $unitCost = null,
+        ?string $reason = null,
+        ?string $referenceType = null,
+        ?string $referenceId = null,
+        ?string $notes = null
+    ): self {
+        return self::create([
+            'store_id' => auth()->user()->store_id,
+            'product_id' => $productId,
+            'user_id' => auth()->id(),
+            'type' => $type,
+            'quantity' => abs($quantity), // Always store positive quantity
+            'unit_cost' => $unitCost,
+            'total_cost' => $unitCost ? $unitCost * abs($quantity) : null,
+            'reason' => $reason,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceId,
+            'notes' => $notes,
+        ]);
     }
 }
