@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - LOG_LEVEL=debug
+    ports:
+      - "8000:8000"
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  mysql:
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: pos_xpress
+      MYSQL_ROOT_PASSWORD: secret
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  supervisor:
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
