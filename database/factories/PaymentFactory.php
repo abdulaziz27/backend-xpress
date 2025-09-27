@@ -17,7 +17,9 @@ class PaymentFactory extends Factory
     public function definition(): array
     {
         return [
-            'payment_method' => $this->faker->randomElement(['cash', 'credit_card', 'debit_card', 'qris', 'bank_transfer']),
+            'store_id' => \App\Models\Store::factory(),
+            'order_id' => \App\Models\Order::factory(),
+            'payment_method' => $this->faker->randomElement(['cash', 'credit_card', 'debit_card', 'qris', 'bank_transfer', 'e_wallet']),
             'amount' => $this->faker->randomFloat(2, 10000, 500000),
             'reference_number' => $this->faker->optional()->regexify('[A-Z0-9]{10}'),
             'status' => $this->faker->randomElement(['pending', 'completed', 'failed']),
