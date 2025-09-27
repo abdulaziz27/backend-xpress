@@ -318,7 +318,7 @@ class TableController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => new TableResource($table->fresh()->load(['currentOrder', 'currentOccupancy'])),
+                'data' => new TableResource($table->fresh()->load(['currentOrder', 'currentOccupancyRelation'])),
                 'message' => 'Table occupied successfully',
                 'meta' => [
                     'occupancy_id' => $occupancy->id,

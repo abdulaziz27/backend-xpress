@@ -7,6 +7,7 @@ use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
 use App\Http\Resources\MemberResource;
 use App\Models\Member;
+use App\Models\MemberTier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -259,7 +260,10 @@ class MemberController extends Controller
         try {
             DB::beginTransaction();
 
-            $member->addLoyaltyPoints($request->input('points'));
+            $member->addLoyaltyPoints(
+                $request->input('points'),
+                $request->input('reason')
+            );
 
             DB::commit();
 
@@ -307,7 +311,7 @@ class MemberController extends Controller
         $this->authorize('update', $member);
 
         $request->validate([
-            'points' => 'required|integer|min:1|max:' . $member->loyalty_points,
+            'points' => 'required|integer|min:1|max:10000',
             'reason' => 'nullable|string|max:255',
         ]);
 
