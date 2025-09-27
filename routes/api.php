@@ -144,8 +144,58 @@ Route::prefix('v1')->group(function () {
         Route::get('member-tiers', [App\Http\Controllers\Api\V1\MemberController::class, 'tiers']);
         Route::get('member-tier-statistics', [App\Http\Controllers\Api\V1\MemberController::class, 'tierStatistics']);
         
+        // Inventory Management Routes (Pro/Enterprise plans only)
+        Route::prefix('inventory')->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\InventoryController::class, 'index']);
+            Route::get('/{product}', [App\Http\Controllers\Api\V1\InventoryController::class, 'show']);
+            Route::post('/adjust', [App\Http\Controllers\Api\V1\InventoryController::class, 'adjust']);
+            Route::get('/movements/list', [App\Http\Controllers\Api\V1\InventoryController::class, 'movements']);
+            Route::post('/transfer', [App\Http\Controllers\Api\V1\InventoryController::class, 'transfer']);
+            Route::get('/alerts/low-stock', [App\Http\Controllers\Api\V1\InventoryController::class, 'lowStockAlerts']);
+        });
+
+        // Recipe Management Routes (Pro/Enterprise plans only)
+        Route::prefix('recipes')->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\RecipeController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\V1\RecipeController::class, 'store']);
+            Route::get('/{recipe}', [App\Http\Controllers\Api\V1\RecipeController::class, 'show']);
+            Route::put('/{recipe}', [App\Http\Controllers\Api\V1\RecipeController::class, 'update']);
+            Route::delete('/{recipe}', [App\Http\Controllers\Api\V1\RecipeController::class, 'destroy']);
+            Route::get('/{recipe}/calculate-cost', [App\Http\Controllers\Api\V1\RecipeController::class, 'calculateCost']);
+            Route::post('/{recipe}/update-costs', [App\Http\Controllers\Api\V1\RecipeController::class, 'updateCosts']);
+            Route::get('/ingredients/available', [App\Http\Controllers\Api\V1\RecipeController::class, 'availableIngredients']);
+        });
+
+        // Inventory Reports Routes (Pro/Enterprise plans only)
+        Route::prefix('inventory/reports')->group(function () {
+            Route::get('/stock-levels', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'stockLevels']);
+            Route::get('/movements', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'movements']);
+            Route::get('/valuation', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'valuation']);
+            Route::get('/cogs-analysis', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'cogsAnalysis']);
+            Route::get('/stock-aging', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'stockAging']);
+            Route::get('/stock-turnover', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'stockTurnover']);
+            Route::post('/export', [App\Http\Controllers\Api\V1\InventoryReportController::class, 'export']);
+        });
+
+        // Cash Flow & Expense Management Routes
+        Route::apiResource('cash-sessions', App\Http\Controllers\Api\V1\CashSessionController::class);
+        Route::post('cash-sessions/{cashSession}/close', [App\Http\Controllers\Api\V1\CashSessionController::class, 'close']);
+        Route::get('cash-sessions-current', [App\Http\Controllers\Api\V1\CashSessionController::class, 'current']);
+        Route::get('cash-sessions-summary', [App\Http\Controllers\Api\V1\CashSessionController::class, 'summary']);
+
+        Route::apiResource('expenses', App\Http\Controllers\Api\V1\ExpenseController::class);
+        Route::get('expense-categories', [App\Http\Controllers\Api\V1\ExpenseController::class, 'categories']);
+        Route::get('expenses-summary', [App\Http\Controllers\Api\V1\ExpenseController::class, 'summary']);
+
+        // Cash Flow Reports Routes
+        Route::prefix('reports/cash-flow')->group(function () {
+            Route::get('/daily', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'dailyCashFlow']);
+            Route::get('/payment-methods', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'paymentMethodBreakdown']);
+            Route::get('/variance-analysis', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'cashVarianceAnalysis']);
+            Route::get('/shift-summary', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'shiftSummary']);
+        });
+        
         // TODO: Implement controllers in subsequent tasks
-        // - InventoryController (Task 8)
         // - ReportController (Task 10)
         // - SyncController (Task 11)
     });

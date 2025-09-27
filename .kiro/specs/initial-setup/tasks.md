@@ -114,7 +114,7 @@
   - Add variant inventory tracking support
   - _Requirements: 3.3, 3.7_
 
-- [ ] 6. Point of Sale Operations
+- [-] 6. Point of Sale Operations
 - [x] 6.1 Implement order creation and management
   - Create OrderController with order lifecycle management
   - Implement order number generation system
@@ -145,7 +145,7 @@
   - Create table occupancy tracking
   - _Requirements: 4.7, 4.8_
 
-- [ ] 7. Customer & Table Management
+- [-] 7. Customer & Table Management
 - [x] 7.1 Implement member management system
   - Create MemberController with CRUD operations
   - Implement member registration and profile management
@@ -163,8 +163,8 @@
   - Add table occupancy reporting
   - _Requirements: 5.3, 5.4, 5.5_
 
-- [ ] 8. Inventory Management & COGS
-- [ ] 8.1 Implement inventory tracking system
+- [x] 8. Inventory Management & COGS
+- [x] 8.1 Implement inventory tracking system
   - Create InventoryMovement model and controller
   - Implement automatic stock deduction on sales
   - Create manual stock adjustment functionality
@@ -174,36 +174,36 @@
   - Implement stock valuation methods (FIFO, LIFO, Weighted Average)
   - _Requirements: 6.1, 6.2, 6.4, 6.7_
 
-- [ ] 8.2 Implement COGS calculation
+- [x] 8.2 Implement COGS calculation
   - Create Recipe model for bill of materials
   - Implement weighted average cost calculation
   - Create COGS history tracking
   - Add ingredient cost calculation for recipes
   - _Requirements: 6.3, 6.6_
 
-- [ ] 8.3 Create inventory reporting
+- [x] 8.3 Create inventory reporting
   - Implement stock level reporting
   - Create inventory movement reports
   - Add inventory valuation calculations
   - Create stock aging and turnover reports
   - _Requirements: 6.5_
 
-- [ ] 9. Cash Flow & Expense Management
-- [ ] 9.1 Implement cash session management
+- [x] 9. Cash Flow & Expense Management
+- [x] 9.1 Implement cash session management
   - Create CashSession model and controller
   - Implement opening and closing cash procedures
   - Create cash reconciliation functionality
   - Add cash discrepancy tracking and alerts
   - _Requirements: 7.1, 7.4_
 
-- [ ] 9.2 Implement expense tracking
+- [x] 9.2 Implement expense tracking
   - Create Expense model and controller
   - Implement expense categorization system
   - Create expense approval workflow
   - Add expense reporting and analysis
   - _Requirements: 7.2_
 
-- [ ] 9.3 Create cash flow reporting
+- [x] 9.3 Create cash flow reporting
   - Implement daily cash flow reports
   - Create payment method breakdown reports
   - Add cash variance analysis
@@ -330,8 +330,8 @@
   - Add recovery time and data validation
   - _Requirements: 14.3, 14.4, 14.6_
 
-- [ ] 16. Quality Assurance & Testing
-- [ ] 16.1 Implement comprehensive test suite
+- [-] 16. Quality Assurance & Testing
+- [x] 16.1 Implement comprehensive test suite
   - Create unit tests for all business logic and calculations
   - Implement feature tests for all API endpoints
   - Create integration tests for external service interactions

@@ -82,6 +82,12 @@ class RolePermissionSeeder extends Seeder
             'cash_sessions.view',
             'cash_sessions.manage',
 
+            // Expense management
+            'expenses.view',
+            'expenses.create',
+            'expenses.update',
+            'expenses.delete',
+
             // Subscription management (system admin only)
             'subscription.view',
             'subscription.manage',
@@ -115,6 +121,7 @@ class RolePermissionSeeder extends Seeder
             'inventory.view', 'inventory.adjust', 'inventory.transfer', 'inventory.reports',
             'reports.view', 'reports.export', 'reports.email',
             'cash_sessions.open', 'cash_sessions.close', 'cash_sessions.view', 'cash_sessions.manage',
+            'expenses.view', 'expenses.create', 'expenses.update', 'expenses.delete',
             'subscription.view',
         ]);
 
@@ -130,6 +137,7 @@ class RolePermissionSeeder extends Seeder
             'inventory.view', 'inventory.adjust', 'inventory.reports',
             'reports.view', 'reports.export',
             'cash_sessions.open', 'cash_sessions.close', 'cash_sessions.view',
+            'expenses.view', 'expenses.create', 'expenses.update',
         ]);
 
         // Cashier - POS operations only
@@ -141,6 +149,7 @@ class RolePermissionSeeder extends Seeder
             'tables.view', 'tables.update',
             'members.view',
             'cash_sessions.open', 'cash_sessions.close', 'cash_sessions.view',
+            'expenses.view', 'expenses.create',
         ]);
     }
 }
