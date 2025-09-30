@@ -57,6 +57,14 @@ class Subscription extends Model
     }
 
     /**
+     * Get the invoices for the subscription.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Check if subscription is active.
      */
     public function isActive(): bool

@@ -134,8 +134,11 @@ class TableController extends Controller
     /**
      * Display the specified table.
      */
-    public function show(Table $table): JsonResponse
+    public function show(string $id): JsonResponse
     {
+        $table = Table::with(['currentOrder', 'occupancyHistories' => function ($query) {
+            $query->latest()->limit(10);
+        }])->findOrFail($id);
         $this->authorize('view', $table);
 
         $table->load(['currentOrder']);
@@ -153,8 +156,9 @@ class TableController extends Controller
     /**
      * Update the specified table.
      */
-    public function update(UpdateTableRequest $request, Table $table): JsonResponse
+    public function update(UpdateTableRequest $request, string $id): JsonResponse
     {
+        $table = Table::findOrFail($id);
         $this->authorize('update', $table);
 
         try {
@@ -200,8 +204,9 @@ class TableController extends Controller
     /**
      * Remove the specified table.
      */
-    public function destroy(Table $table): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $table = Table::findOrFail($id);
         $this->authorize('delete', $table);
 
         if ($table->isOccupied()) {
@@ -280,8 +285,9 @@ class TableController extends Controller
     /**
      * Occupy a table.
      */
-    public function occupy(Request $request, Table $table): JsonResponse
+    public function occupy(Request $request, string $id): JsonResponse
     {
+        $table = Table::findOrFail($id);
         $this->authorize('update', $table);
 
         $request->validate([
@@ -354,8 +360,9 @@ class TableController extends Controller
     /**
      * Make a table available.
      */
-    public function makeAvailable(Table $table): JsonResponse
+    public function makeAvailable(string $id): JsonResponse
     {
+        $table = Table::findOrFail($id);
         $this->authorize('update', $table);
 
         try {

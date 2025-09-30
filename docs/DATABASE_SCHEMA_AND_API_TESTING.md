@@ -19,11 +19,16 @@ POST {{base_url}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@store1.com",
+  "email": "aziz@xpress.com",
   "password": "password"
 }
 ```
 **Save the token from response for all subsequent requests**
+
+**Available Test Users:**
+- System Admin: `admin@posxpress.com` / `password`
+- Store Owner: `aziz@xpress.com` / `password`
+- Additional users are created with `cashier` and `manager` roles
 
 #### Get Current User
 ```
@@ -155,7 +160,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "number": "T001",
+  "table_number": "T001",
   "name": "Table 1",
   "capacity": 4,
   "location": "Main dining area",
@@ -253,7 +258,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "opening_amount": 1000000,
+  "opening_balance": 100000,
   "notes": "Morning shift opening"
 }
 ```
@@ -408,10 +413,10 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "category": "supplies",
+  "category": "inventory",
   "description": "Coffee beans purchase",
-  "amount": 450000,
-  "expense_date": "2024-01-15"
+  "amount": 45000,
+  "expense_date": "2025-09-27"
 }
 ```
 

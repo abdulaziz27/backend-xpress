@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -119,13 +120,13 @@ class ProductController extends Controller
     /**
      * Display the specified product.
      */
-    public function show(Product $product): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $this->authorize('view', $product);
-
-        $product->load(['category:id,name', 'options', 'priceHistory' => function ($query) {
+        $product = Product::with(['category:id,name', 'options', 'priceHistory' => function ($query) {
             $query->with('changedBy:id,name')->latest()->limit(10);
-        }]);
+        }])->findOrFail($id);
+
+        $this->authorize('view', $product);
 
         return response()->json([
             'success' => true,
@@ -140,8 +141,9 @@ class ProductController extends Controller
     /**
      * Update the specified product.
      */
-    public function update(Request $request, Product $product): JsonResponse
+    public function update(Request $request, string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('update', $product);
 
         $validator = Validator::make($request->all(), [
@@ -233,8 +235,9 @@ class ProductController extends Controller
     /**
      * Remove the specified product.
      */
-    public function destroy(Product $product): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('delete', $product);
 
         // Check if product has order items
@@ -270,8 +273,9 @@ class ProductController extends Controller
     /**
      * Archive the specified product.
      */
-    public function archive(Product $product): JsonResponse
+    public function archive(string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('update', $product);
 
         $product->archive();
@@ -290,8 +294,9 @@ class ProductController extends Controller
     /**
      * Restore the archived product.
      */
-    public function restore(Product $product): JsonResponse
+    public function restore(string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('update', $product);
 
         $product->restore();
@@ -310,8 +315,9 @@ class ProductController extends Controller
     /**
      * Upload product image.
      */
-    public function uploadImage(Request $request, Product $product): JsonResponse
+    public function uploadImage(Request $request, string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('update', $product);
 
         $validator = Validator::make($request->all(), [
@@ -360,8 +366,9 @@ class ProductController extends Controller
     /**
      * Get product price history.
      */
-    public function priceHistory(Product $product): JsonResponse
+    public function priceHistory(string $id): JsonResponse
     {
+        $product = Product::findOrFail($id);
         $this->authorize('view', $product);
 
         $history = $product->priceHistory()

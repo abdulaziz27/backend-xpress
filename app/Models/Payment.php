@@ -23,11 +23,19 @@ class Payment extends Model
         'processed_at',
         'processed_by',
         'notes',
+        'gateway',
+        'gateway_transaction_id',
+        'payment_method_id',
+        'invoice_id',
+        'gateway_fee',
+        'gateway_response',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'gateway_fee' => 'decimal:2',
         'processed_at' => 'datetime',
+        'gateway_response' => 'array',
     ];
 
 
@@ -46,6 +54,22 @@ class Payment extends Model
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * Get the payment method used for this payment.
+     */
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class);
+    }
+
+    /**
+     * Get the invoice this payment is for.
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     /**
@@ -90,5 +114,37 @@ class Payment extends Model
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');
+    }
+
+    /**
+     * Get net amount after gateway fees.
+     */
+    public function getNetAmountAttribute(): float
+    {
+        return $this->amount - $this->gateway_fee;
+    }
+
+    /**
+     * Check if payment was processed through a gateway.
+     */
+    public function hasGateway(): bool
+    {
+        return !empty($this->gateway);
+    }
+
+    /**
+     * Scope to filter by gateway.
+     */
+    public function scopeByGateway($query, string $gateway)
+    {
+        return $query->where('gateway', $gateway);
+    }
+
+    /**
+     * Scope to get payments with gateway fees.
+     */
+    public function scopeWithGatewayFees($query)
+    {
+        return $query->where('gateway_fee', '>', 0);
     }
 }

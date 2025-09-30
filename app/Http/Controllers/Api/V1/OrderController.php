@@ -160,8 +160,9 @@ class OrderController extends Controller
     /**
      * Display the specified order.
      */
-    public function show(Order $order): JsonResponse
+    public function show(string $id): JsonResponse
     {
+        $order = Order::with(['items.product', 'member', 'table', 'user:id,name', 'payments'])->findOrFail($id);
         $this->authorize('view', $order);
 
         $order->load(['items.product.options', 'member', 'table', 'user:id,name', 'payments', 'refunds']);
@@ -179,8 +180,9 @@ class OrderController extends Controller
     /**
      * Update the specified order.
      */
-    public function update(UpdateOrderRequest $request, Order $order): JsonResponse
+    public function update(UpdateOrderRequest $request, string $id): JsonResponse
     {
+        $order = Order::findOrFail($id);
         $this->authorize('update', $order);
 
         if (!$order->canBeModified()) {
@@ -260,8 +262,9 @@ class OrderController extends Controller
     /**
      * Remove the specified order.
      */
-    public function destroy(Order $order): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $order = Order::findOrFail($id);
         $this->authorize('delete', $order);
 
         if (!$order->canBeModified()) {
@@ -332,8 +335,9 @@ class OrderController extends Controller
     /**
      * Add item to order.
      */
-    public function addItem(AddOrderItemRequest $request, Order $order): JsonResponse
+    public function addItem(AddOrderItemRequest $request, string $id): JsonResponse
     {
+        $order = Order::findOrFail($id);
         $this->authorize('update', $order);
 
         if (!$order->canBeModified()) {
@@ -399,8 +403,10 @@ class OrderController extends Controller
     /**
      * Update order item.
      */
-    public function updateItem(Request $request, Order $order, OrderItem $item): JsonResponse
+    public function updateItem(Request $request, string $orderId, string $itemId): JsonResponse
     {
+        $order = Order::findOrFail($orderId);
+        $item = $order->items()->findOrFail($itemId);
         $this->authorize('update', $order);
 
         if ($item->order_id !== $order->id) {
@@ -501,8 +507,10 @@ class OrderController extends Controller
     /**
      * Remove item from order.
      */
-    public function removeItem(Order $order, OrderItem $item): JsonResponse
+    public function removeItem(string $orderId, string $itemId): JsonResponse
     {
+        $order = Order::findOrFail($orderId);
+        $item = $order->items()->findOrFail($itemId);
         $this->authorize('update', $order);
 
         if ($item->order_id !== $order->id) {
@@ -583,8 +591,9 @@ class OrderController extends Controller
     /**
      * Complete an order.
      */
-    public function complete(Order $order): JsonResponse
+    public function complete(string $id): JsonResponse
     {
+        $order = Order::findOrFail($id);
         $this->authorize('update', $order);
 
         if ($order->status === 'completed') {

@@ -133,8 +133,11 @@ class MemberController extends Controller
     /**
      * Display the specified member.
      */
-    public function show(Member $member): JsonResponse
+    public function show(string $id): JsonResponse
     {
+        $member = Member::with(['tier', 'loyaltyTransactions' => function ($query) {
+            $query->latest()->limit(10);
+        }])->findOrFail($id);
         $this->authorize('view', $member);
 
         $member->load(['orders' => function ($query) {
@@ -154,8 +157,9 @@ class MemberController extends Controller
     /**
      * Update the specified member.
      */
-    public function update(UpdateMemberRequest $request, Member $member): JsonResponse
+    public function update(UpdateMemberRequest $request, string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('update', $member);
 
         try {
@@ -201,8 +205,9 @@ class MemberController extends Controller
     /**
      * Remove the specified member.
      */
-    public function destroy(Member $member): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('delete', $member);
 
         try {
@@ -248,8 +253,9 @@ class MemberController extends Controller
     /**
      * Add loyalty points to a member.
      */
-    public function addLoyaltyPoints(Request $request, Member $member): JsonResponse
+    public function addLoyaltyPoints(Request $request, string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('update', $member);
 
         $request->validate([
@@ -306,8 +312,9 @@ class MemberController extends Controller
     /**
      * Redeem loyalty points from a member.
      */
-    public function redeemLoyaltyPoints(Request $request, Member $member): JsonResponse
+    public function redeemLoyaltyPoints(Request $request, string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('update', $member);
 
         $request->validate([
@@ -377,8 +384,9 @@ class MemberController extends Controller
     /**
      * Get member statistics.
      */
-    public function statistics(Member $member): JsonResponse
+    public function statistics(string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('view', $member);
 
         $member->load(['tier', 'loyaltyTransactions' => function ($query) {
@@ -426,8 +434,9 @@ class MemberController extends Controller
     /**
      * Get member's loyalty point transaction history.
      */
-    public function loyaltyHistory(Request $request, Member $member): JsonResponse
+    public function loyaltyHistory(Request $request, string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('view', $member);
 
         $query = $member->loyaltyTransactions()->with(['order', 'user']);
@@ -476,8 +485,9 @@ class MemberController extends Controller
     /**
      * Adjust member loyalty points (manual adjustment by staff).
      */
-    public function adjustLoyaltyPoints(Request $request, Member $member): JsonResponse
+    public function adjustLoyaltyPoints(Request $request, string $id): JsonResponse
     {
+        $member = Member::findOrFail($id);
         $this->authorize('update', $member);
 
         $request->validate([

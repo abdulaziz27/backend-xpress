@@ -23,8 +23,13 @@ class TenantScopeMiddleware
         }
 
         // System admin bypasses tenant scoping
-        if ($user->hasRole('admin_sistem')) {
-            return $next($request);
+        try {
+            if ($user->hasRole('admin_sistem')) {
+                return $next($request);
+            }
+        } catch (\Exception $e) {
+            // If roles are not set up, continue with normal tenant scoping
+            Log::debug('Role check failed, continuing with tenant scoping', ['error' => $e->getMessage()]);
         }
 
         // Validate store access for route parameters

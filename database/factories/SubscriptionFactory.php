@@ -23,6 +23,8 @@ class SubscriptionFactory extends Factory
             : (clone $startsAt)->modify('+1 year');
 
         return [
+            'store_id' => \App\Models\Store::factory(),
+            'plan_id' => \App\Models\Plan::factory(),
             'status' => $this->faker->randomElement(['active', 'inactive', 'cancelled', 'expired']),
             'billing_cycle' => $billingCycle,
             'starts_at' => $startsAt,

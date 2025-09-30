@@ -219,6 +219,12 @@ POS Xpress adalah sistem backend yang menyediakan REST API untuk aplikasi Point 
 6. WHEN deploying THEN the system SHALL run all tests and prevent deployment on failures
 7. WHEN testing offline sync THEN the system SHALL validate batch processing of 1000+ transactions
 
+### Requirement 16: Use Context7 for the latest documentation
+**User Story:** As a developer, I want to use the latest documentation, so that I can stay up-to-date with the latest changes.
+
+#### Acceptance Criteri
+1. WHEN accessing documentation THEN the system SHALL use the latest version of Context7
+
 ## Non-Functional Requirements
 
 ### Performance Requirements

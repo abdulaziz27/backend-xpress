@@ -40,7 +40,7 @@ Route::prefix('v1')->group(function () {
         });
         
         // Protected authentication routes
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::middleware('auth.api:sanctum')->group(function () {
             Route::post('/logout', [App\Http\Controllers\Api\V1\AuthController::class, 'logout']);
             Route::post('/logout-all', [App\Http\Controllers\Api\V1\AuthController::class, 'logoutAll']);
             Route::get('/me', [App\Http\Controllers\Api\V1\AuthController::class, 'me']);
@@ -57,8 +57,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/{token}/decline', [App\Http\Controllers\Api\V1\InvitationController::class, 'decline']);
     });
 
+    // Midtrans Webhook (no authentication required)
+    Route::post('/webhooks/midtrans', [App\Http\Controllers\Api\V1\MidtransWebhookController::class, 'handle']);
+
     // Protected API Routes (will be implemented in later tasks)
-    Route::middleware(['auth:sanctum', 'tenant.scope'])->group(function () {
+    Route::middleware(['auth.api:sanctum', 'tenant.scope'])->group(function () {
         // Store Switching Routes (System Admin only)
         Route::prefix('admin/stores')->group(function () {
             Route::get('/', [App\Http\Controllers\Api\V1\StoreSwitchController::class, 'index']);
@@ -194,10 +197,55 @@ Route::prefix('v1')->group(function () {
             Route::get('/variance-analysis', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'cashVarianceAnalysis']);
             Route::get('/shift-summary', [App\Http\Controllers\Api\V1\CashFlowReportController::class, 'shiftSummary']);
         });
+
+        // Reporting & Analytics Routes
+        Route::prefix('reports')->group(function () {
+            Route::get('/dashboard', [App\Http\Controllers\Api\V1\ReportController::class, 'dashboard']);
+            Route::get('/sales', [App\Http\Controllers\Api\V1\ReportController::class, 'sales']);
+            Route::get('/inventory', [App\Http\Controllers\Api\V1\ReportController::class, 'inventory']);
+            Route::get('/cash-flow', [App\Http\Controllers\Api\V1\ReportController::class, 'cashFlow']);
+            Route::get('/product-performance', [App\Http\Controllers\Api\V1\ReportController::class, 'productPerformance']);
+            Route::get('/customer-analytics', [App\Http\Controllers\Api\V1\ReportController::class, 'customerAnalytics']);
+            Route::post('/export', [App\Http\Controllers\Api\V1\ReportController::class, 'export']);
+            
+            // Business Intelligence Routes
+            Route::get('/sales-trends', [App\Http\Controllers\Api\V1\ReportController::class, 'salesTrends']);
+            Route::get('/product-analytics', [App\Http\Controllers\Api\V1\ReportController::class, 'productAnalytics']);
+            Route::get('/customer-behavior', [App\Http\Controllers\Api\V1\ReportController::class, 'customerBehavior']);
+            Route::get('/profitability-analysis', [App\Http\Controllers\Api\V1\ReportController::class, 'profitabilityAnalysis']);
+            Route::get('/operational-efficiency', [App\Http\Controllers\Api\V1\ReportController::class, 'operationalEfficiency']);
+        });
         
-        // TODO: Implement controllers in subsequent tasks
-        // - ReportController (Task 10)
-        // - SyncController (Task 11)
+        // Subscription Management Routes
+        Route::prefix('subscription')->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'index']);
+            Route::get('/status', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'status']);
+            Route::get('/usage', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'usage']);
+            Route::post('/upgrade', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'upgrade']);
+            Route::post('/downgrade', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'downgrade']);
+            Route::post('/cancel', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'cancel']);
+            Route::post('/renew', [App\Http\Controllers\Api\V1\SubscriptionController::class, 'renew']);
+        });
+
+        // Payment Method Management Routes
+        Route::prefix('payment-methods')->group(function () {
+            Route::get('/', [App\Http\Controllers\Api\V1\PaymentMethodController::class, 'index']);
+            Route::post('/create-token', [App\Http\Controllers\Api\V1\PaymentMethodController::class, 'createToken']);
+            Route::post('/', [App\Http\Controllers\Api\V1\PaymentMethodController::class, 'store']);
+            Route::post('/{paymentMethod}/set-default', [App\Http\Controllers\Api\V1\PaymentMethodController::class, 'setDefault']);
+            Route::delete('/{paymentMethod}', [App\Http\Controllers\Api\V1\PaymentMethodController::class, 'destroy']);
+        });
+
+        // Offline Synchronization Routes
+        Route::prefix('sync')->group(function () {
+            Route::post('/batch', [App\Http\Controllers\Api\V1\SyncController::class, 'batchSync']);
+            Route::post('/status', [App\Http\Controllers\Api\V1\SyncController::class, 'getSyncStatus']);
+            Route::get('/stats', [App\Http\Controllers\Api\V1\SyncController::class, 'getSyncStats']);
+            Route::post('/resolve-conflicts', [App\Http\Controllers\Api\V1\SyncController::class, 'resolveConflicts']);
+            Route::post('/queue', [App\Http\Controllers\Api\V1\SyncController::class, 'queueSync']);
+            Route::get('/queue/status', [App\Http\Controllers\Api\V1\SyncController::class, 'getQueueStatus']);
+            Route::post('/retry-failed', [App\Http\Controllers\Api\V1\SyncController::class, 'retryFailed']);
+        });
     });
 });
 

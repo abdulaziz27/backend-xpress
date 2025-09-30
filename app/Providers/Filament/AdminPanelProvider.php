@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\TenantScopeMiddleware;
+use App\Http\Middleware\FilamentResourceAccessMiddleware;
+use App\Services\NavigationService;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,9 +30,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('POS Xpress')
+            ->brandName('POS Xpress - Store Admin')
+            ->brandLogo(asset('img/logo-jf.png'))
+            ->favicon(asset('favicon.ico'))
             ->colors([
                 'primary' => Color::Blue,
+                'gray' => Color::Slate,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -39,7 +45,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -54,6 +59,32 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                TenantScopeMiddleware::class,
+                FilamentResourceAccessMiddleware::class,
+            ])
+            ->navigationGroups(NavigationService::getNavigationGroupsForUser())
+            ->renderHook(
+                'panels::head.end',
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-roles.css') . '">'
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn (): string => '<script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        // Role-based UI customizations
+                        const userRole = "' . (auth()->user()?->roles->first()?->name ?? '') . '";
+                        document.body.classList.add("role-" + userRole);
+                        
+                        // Add role badge to user menu
+                        const userMenu = document.querySelector(".fi-dropdown-trigger");
+                        if (userMenu && userRole) {
+                            const badge = document.createElement("span");
+                            badge.className = "role-badge " + userRole;
+                            badge.textContent = userRole.replace("_", " ");
+                            userMenu.appendChild(badge);
+                        }
+                    });
+                </script>'
+            );
     }
 }

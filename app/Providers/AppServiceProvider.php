@@ -12,7 +12,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register sync services
+        $this->app->singleton(\App\Services\Sync\IdempotencyService::class);
+        $this->app->singleton(\App\Services\Sync\SyncPerformanceMonitor::class);
+        $this->app->singleton(\App\Services\Sync\SyncValidationService::class);
+        $this->app->singleton(\App\Services\Sync\ConflictResolver::class);
+        $this->app->singleton(\App\Services\Sync\SyncService::class);
+        $this->app->singleton(\App\Services\Sync\SyncReliabilityService::class);
     }
 
     /**

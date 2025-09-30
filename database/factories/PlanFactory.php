@@ -47,7 +47,7 @@ class PlanFactory extends Factory
 
         return [
             'name' => $plan['name'],
-            'slug' => $plan['slug'],
+            'slug' => $plan['slug'] . '-' . $this->faker->unique()->randomNumber(5),
             'description' => $this->faker->sentence(),
             'price' => $plan['price'],
             'annual_price' => $plan['annual_price'],

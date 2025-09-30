@@ -135,9 +135,9 @@ class ExpenseController extends Controller
     /**
      * Display the specified expense.
      */
-    public function show(Expense $expense): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $expense->load(['user:id,name,email', 'cashSession:id,opened_at,closed_at,status']);
+        $expense = Expense::with(['user:id,name,email', 'cashSession:id,opened_at,closed_at,status'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -149,8 +149,9 @@ class ExpenseController extends Controller
     /**
      * Update the specified expense.
      */
-    public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
+    public function update(UpdateExpenseRequest $request, string $id): JsonResponse
     {
+        $expense = Expense::findOrFail($id);
         try {
             DB::beginTransaction();
 
@@ -201,8 +202,9 @@ class ExpenseController extends Controller
     /**
      * Remove the specified expense.
      */
-    public function destroy(Expense $expense): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $expense = Expense::findOrFail($id);
         try {
             DB::beginTransaction();
 

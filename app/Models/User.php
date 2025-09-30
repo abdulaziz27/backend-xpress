@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'store_id',
+        'midtrans_customer_id',
     ];
 
     /**
@@ -59,5 +60,21 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get the payment methods for the user.
+     */
+    public function paymentMethods()
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    /**
+     * Get the default payment method for the user.
+     */
+    public function defaultPaymentMethod()
+    {
+        return $this->hasOne(PaymentMethod::class)->where('is_default', true);
     }
 }

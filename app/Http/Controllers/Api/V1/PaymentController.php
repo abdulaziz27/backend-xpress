@@ -194,8 +194,9 @@ class PaymentController extends Controller
     /**
      * Display the specified payment.
      */
-    public function show(Payment $payment): JsonResponse
+    public function show(string $id): JsonResponse
     {
+        $payment = Payment::with(['order', 'refunds'])->findOrFail($id);
         $this->authorize('view', $payment);
 
         $payment->load(['order', 'refunds']);

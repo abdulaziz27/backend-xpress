@@ -1,0 +1,118 @@
+/* Role-based UI customizations */
+
+/* System Admin Styling */
+.role-admin_sistem .fi-sidebar-nav {
+    border-left: 4px solid #dc2626; /* Red accent for system admin */
+}
+
+.role-admin_sistem .fi-topbar {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Store Owner Styling */
+.role-owner .fi-sidebar-nav {
+    border-left: 4px solid #2563eb; /* Blue accent for owner */
+}
+
+.role-owner .fi-topbar {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+/* Manager Styling */
+.role-manager .fi-sidebar-nav {
+    border-left: 4px solid #f59e0b; /* Yellow accent for manager */
+}
+
+.role-manager .fi-topbar {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Cashier Styling */
+.role-cashier .fi-sidebar-nav {
+    border-left: 4px solid #10b981; /* Green accent for cashier */
+}
+
+.role-cashier .fi-topbar {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* Hide certain navigation items based on role */
+.role-cashier .fi-sidebar-nav-item[data-group="Reports"],
+.role-cashier .fi-sidebar-nav-item[data-group="Settings"] {
+    display: none;
+}
+
+.role-manager .fi-sidebar-nav-item[data-group="Store Management"] {
+    display: none;
+}
+
+/* Role badges in user menu */
+.fi-dropdown-list-item .role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+}
+
+.role-badge.admin_sistem {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.role-badge.owner {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.role-badge.manager {
+    background-color: #fffbeb;
+    color: #f59e0b;
+}
+
+.role-badge.cashier {
+    background-color: #f0fdf4;
+    color: #10b981;
+}
+
+/* Quick action buttons for different roles */
+.role-cashier .quick-actions {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+}
+
+.role-cashier .quick-actions .quick-action-btn {
+    display: block;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #10b981;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-cashier .quick-actions .quick-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .role-cashier .quick-actions {
+        bottom: 80px;
+        right: 16px;
+    }
+    
+    .role-cashier .quick-actions .quick-action-btn {
+        width: 50px;
+        height: 50px;
+    }
+}

@@ -108,9 +108,9 @@ class CashSessionController extends Controller
     /**
      * Display the specified cash session.
      */
-    public function show(CashSession $cashSession): JsonResponse
+    public function show(string $id): JsonResponse
     {
-        $cashSession->load(['user:id,name,email', 'expenses']);
+        $cashSession = CashSession::with(['user:id,name,email', 'expenses'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -122,8 +122,9 @@ class CashSessionController extends Controller
     /**
      * Update the specified cash session.
      */
-    public function update(UpdateCashSessionRequest $request, CashSession $cashSession): JsonResponse
+    public function update(UpdateCashSessionRequest $request, string $id): JsonResponse
     {
+        $cashSession = CashSession::findOrFail($id);
         if ($cashSession->status === 'closed') {
             return response()->json([
                 'success' => false,
@@ -143,8 +144,9 @@ class CashSessionController extends Controller
     /**
      * Close the specified cash session.
      */
-    public function close(Request $request, CashSession $cashSession): JsonResponse
+    public function close(Request $request, string $id): JsonResponse
     {
+        $cashSession = CashSession::findOrFail($id);
         $request->validate([
             'closing_balance' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:1000'
@@ -253,8 +255,9 @@ class CashSessionController extends Controller
     /**
      * Remove the specified cash session.
      */
-    public function destroy(CashSession $cashSession): JsonResponse
+    public function destroy(string $id): JsonResponse
     {
+        $cashSession = CashSession::findOrFail($id);
         if ($cashSession->status === 'open') {
             return response()->json([
                 'success' => false,

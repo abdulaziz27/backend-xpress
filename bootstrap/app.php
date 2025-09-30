@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\ApiAuthenticateMiddleware;
+use App\Http\Middleware\ApiResponseMiddleware;
+use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -13,9 +16,12 @@ use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\ValidateSignature;
 use App\Http\Middleware\VerifyCsrfToken;
 use App\Http\Middleware\PlanGateMiddleware;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -48,6 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // API middleware group
         $middleware->api(prepend: [
+            ForceJsonResponse::class,
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
@@ -56,6 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Middleware aliases
         $middleware->alias([
             'auth' => Authenticate::class,
+            'auth.api' => ApiAuthenticateMiddleware::class,
             'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
             'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
             'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -71,6 +79,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'tenant.scope' => TenantScopeMiddleware::class,
             'plan.gate' => PlanGateMiddleware::class,
+            'api.response' => ApiResponseMiddleware::class,
+            'filament.resource.access' => \App\Http\Middleware\FilamentResourceAccessMiddleware::class,
         ]);
 
         // Middleware priority (optional - defines execution order)
@@ -90,6 +100,45 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'AUTHENTICATION_FAILED',
+                        'message' => 'Authentication required to access this resource',
+                        'details' => [
+                            'guards' => $e->guards(),
+                            'reason' => 'unauthenticated'
+                        ]
+                    ],
+                    'meta' => [
+                        'timestamp' => now()->toISOString(),
+                        'version' => 'v1',
+                        'request_id' => $request->header('X-Request-ID', uniqid()),
+                    ]
+                ], 401);
+            }
+        });
+
+        $exceptions->render(function (ValidationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'VALIDATION_FAILED',
+                        'message' => 'The given data was invalid.',
+                        'details' => [
+                            'validation_errors' => $e->errors()
+                        ]
+                    ],
+                    'meta' => [
+                        'timestamp' => now()->toISOString(),
+                        'version' => 'v1',
+                        'request_id' => $request->header('X-Request-ID', uniqid()),
+                    ]
+                ], $e->status);
+            }
+        });
     })
     ->create();
